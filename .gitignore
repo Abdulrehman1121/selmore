@@ -1,0 +1,20 @@
+# Node modules
+node_modules/
+server/node_modules/
+skyhigh-ads/node_modules/
+
+# Environment variables
+.env
+server/.env
+skyhigh-ads/.env
+
+# Build and dist folders
+server/dist/
+skyhigh-ads/dist/
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int         @id @default(autoincrement())
+  name             String
+  email            String      @unique
+  password         String
+  role             String?
+  billboards       Billboard[]
+  campaigns        Campaign[]
+  bids             Bid[]
+  sentMessages     Message[]   @relation("SentMessages")
+  receivedMessages Message[]   @relation("ReceivedMessages")
+  ownerBookings    Booking[]   @relation("OwnerBookings")
+  clientBookings   Booking[]   @relation("ClientBookings")
+}
+
+model Billboard {
+  id          Int       @id @default(autoincrement())
+  title       String
+  location    String
+  city        String
+  price       Float
+  priceType   String?
+  bookingType String?
+  image       String?
+  ownerId     Int
+  owner       User      @relation(fields: [ownerId], references: [id])
+  bids        Bid[]
+  type        String
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+}
+
+model Campaign {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  clientId    Int
+  client      User      @relation(fields: [clientId], references: [id])
+  bids        Bid[]
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+}
+
+
+
+model Booking {
+  id          Int       @id @default(autoincrement())  
+  ownerId     Int
+  clientId    Int
+  billboardId Int
+  campaignId  Int
+  startDate   DateTime
+  endDate     DateTime
+  status      String
+  price       Float
+  owner       User      @relation("OwnerBookings", fields: [ownerId], references: [id])
+  client      User      @relation("ClientBookings", fields: [clientId], references: [id])
+  billboard   Billboard @relation(fields: [billboardId], references: [id])
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  invoice     Invoice?
+  createdAt   DateTime  @default(now())
+}
+
+model Invoice {
+  id            Int      @id @default(autoincrement())
+  invoiceNumber String
+  amount        Float
+  status        String
+  bookingId     Int      @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+  createdAt     DateTime @default(now())
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  fromId    Int
+  toId      Int
+  content   String
+  createdAt DateTime @default(now())
+  from      User     @relation("SentMessages", fields: [fromId], references: [id])
+  to        User     @relation("ReceivedMessages", fields: [toId], references: [id])
+}
+model Bid {
+  id          Int       @id @default(autoincrement())
+  campaignId  Int
+  billboardId Int
+  amount      Float
+  status      String    @default("pending")
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  billboard   Billboard @relation(fields: [billboardId], references: [id])
+  userId      Int?
+  clientBid   Float
+  createdAt   DateTime @default(now())
+  user        User?     @relation(fields: [userId], references: [id])
+}
